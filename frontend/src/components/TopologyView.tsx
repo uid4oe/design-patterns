@@ -158,7 +158,7 @@ function TopologyInner({ nodes, edges, activeEdgeKey, activeNodeId }: TopologyVi
       edges={flowEdges}
       nodeTypes={nodeTypes}
       fitView
-      fitViewOptions={{ padding: 0.3 }}
+      fitViewOptions={{ padding: 0.5, maxZoom: 1 }}
       panOnDrag
       zoomOnScroll={false}
       preventScrolling={false}
