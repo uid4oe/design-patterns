@@ -14,34 +14,37 @@ interface PatternSelectorProps {
   patterns: PatternInfo[];
   selected: string | null;
   onSelect: (name: string) => void;
+  disabled: boolean;
 }
 
 export function PatternSelector({
   patterns,
   selected,
   onSelect,
+  disabled,
 }: PatternSelectorProps) {
   if (patterns.length === 0) {
     return (
-      <div className="text-[var(--color-text-muted)] text-sm p-3">
+      <div className="text-[var(--color-text-tertiary)] text-[12px] px-2 py-1">
         No patterns loaded
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex items-center gap-1">
       {patterns.map((p) => (
         <button
           key={p.name}
           onClick={() => onSelect(p.name)}
-          className={`text-left px-3 py-2 rounded-lg transition-colors text-sm ${
+          disabled={disabled}
+          className={`shrink-0 rounded-lg px-2.5 py-1 text-[12px] font-medium transition-all duration-150 ${
             selected === p.name
-              ? "bg-[var(--color-accent)] text-white"
-              : "hover:bg-[var(--color-bg-tertiary)] text-[var(--color-text-secondary)]"
-          }`}
+              ? "bg-[var(--color-accent)] text-white shadow-sm shadow-blue-500/15"
+              : "text-[var(--color-text-tertiary)] hover:bg-black/[0.03]"
+          } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
         >
-          <span className="mr-2">{PATTERN_ICONS[p.name] ?? "📦"}</span>
+          <span className="mr-1">{PATTERN_ICONS[p.name] ?? "📦"}</span>
           {p.name}
         </button>
       ))}

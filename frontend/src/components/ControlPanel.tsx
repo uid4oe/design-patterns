@@ -8,79 +8,68 @@ interface ControlPanelProps {
 }
 
 export function ControlPanel({ isRunning, onRun, onReset }: ControlPanelProps) {
-  const [requestCount, setRequestCount] = useState(50);
-  const [requestsPerSecond, setRequestsPerSecond] = useState(10);
-  const [seed, setSeed] = useState<number | undefined>(undefined);
+  const [requestCount, setRequestCount] = useState(20);
+  const [requestsPerSecond, setRequestsPerSecond] = useState(5);
 
   const handleRun = () => {
-    const scenario: ScenarioConfig = {
-      requestCount,
-      requestsPerSecond,
-      ...(seed !== undefined ? { seed } : {}),
-    };
-    onRun(scenario);
+    onRun({ requestCount, requestsPerSecond });
   };
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
-          Requests: {requestCount}
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
+        <label className="text-[11px] font-medium text-[var(--color-text-tertiary)]">
+          Requests
         </label>
         <input
-          type="range"
+          type="number"
           min={1}
           max={200}
           value={requestCount}
           onChange={(e) => setRequestCount(Number(e.target.value))}
           disabled={isRunning}
-          className="w-full accent-[var(--color-accent)]"
+          className="w-16 bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] px-2 py-1 rounded-lg text-[12px] font-mono border border-[var(--color-border-light)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-40"
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
-          Rate: {requestsPerSecond} rps
+      <div className="flex items-center gap-2">
+        <label className="text-[11px] font-medium text-[var(--color-text-tertiary)]">
+          Rate
         </label>
         <input
-          type="range"
+          type="number"
           min={1}
           max={50}
           value={requestsPerSecond}
           onChange={(e) => setRequestsPerSecond(Number(e.target.value))}
           disabled={isRunning}
-          className="w-full accent-[var(--color-accent)]"
+          className="w-16 bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] px-2 py-1 rounded-lg text-[12px] font-mono border border-[var(--color-border-light)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-40"
         />
+        <span className="text-[10px] text-[var(--color-text-tertiary)]">rps</span>
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
-          Seed (optional)
-        </label>
-        <input
-          type="number"
-          value={seed ?? ""}
-          onChange={(e) =>
-            setSeed(e.target.value ? Number(e.target.value) : undefined)
-          }
-          placeholder="Random"
-          disabled={isRunning}
-          className="bg-[var(--color-bg-tertiary)] text-[var(--color-text-primary)] px-3 py-1.5 rounded-lg text-sm border border-[var(--color-border)] outline-none focus:border-[var(--color-accent)]"
-        />
-      </div>
-
-      <div className="flex gap-2 mt-1">
+      <div className="flex gap-1.5 ml-auto">
         <button
           onClick={handleRun}
           disabled={isRunning}
-          className="flex-1 px-4 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          className="px-4 py-1.5 bg-gradient-to-b from-blue-500 to-blue-600 text-white rounded-xl text-[12px] font-medium transition-all shadow-sm shadow-blue-500/15 hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed"
         >
-          {isRunning ? "Running..." : "Run Simulation"}
+          {isRunning ? (
+            <span className="flex items-center gap-1.5">
+              <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Running
+            </span>
+          ) : (
+            "Run"
+          )}
         </button>
         <button
           onClick={onReset}
           disabled={isRunning}
-          className="px-4 py-2 bg-[var(--color-bg-tertiary)] hover:bg-[var(--color-border)] text-[var(--color-text-secondary)] rounded-lg text-sm transition-colors disabled:opacity-50"
+          className="px-3 py-1.5 text-[var(--color-text-tertiary)] rounded-xl text-[12px] font-medium transition-all hover:bg-black/[0.03] disabled:opacity-30 disabled:cursor-not-allowed"
         >
           Reset
         </button>

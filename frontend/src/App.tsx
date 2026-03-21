@@ -20,65 +20,75 @@ export function App() {
   }, []);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="h-screen flex flex-col p-2 lg:p-2.5 gap-2 lg:gap-2.5">
       {/* Header */}
-      <header className="glass-strong px-6 py-3 flex items-center justify-between border-b border-[var(--color-border)]">
-        <div className="flex items-center gap-3">
-          <span className="text-xl">🔧</span>
-          <h1 className="text-lg font-bold text-[var(--color-text-primary)]">
+      <header className="shrink-0 flex items-center justify-between px-4 py-1">
+        <div className="flex items-center gap-2.5">
+          <span className="text-lg">🔧</span>
+          <h1 className="text-base font-semibold text-[var(--color-text-primary)]">
             Design Patterns
           </h1>
+          <span className="text-[11px] text-[var(--color-text-tertiary)] font-medium">
+            System Design &amp; Distribution
+          </span>
         </div>
-        <span className="text-xs text-[var(--color-text-muted)]">
-          System Design &amp; Distribution Patterns
-        </span>
+        <div className="flex items-center gap-2">
+          {state.isRunning && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-600">
+              <span className="h-1 w-1 rounded-full bg-blue-500 animate-pulse" />
+              Live
+            </span>
+          )}
+        </div>
       </header>
 
       {/* Main content */}
-      <div className="flex flex-1 min-h-0">
-        {/* Sidebar */}
-        <aside className="w-64 glass-strong border-r border-[var(--color-border)] flex flex-col p-4 gap-4 overflow-y-auto">
-          <div>
-            <h2 className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
-              Patterns
-            </h2>
-            <PatternSelector
-              patterns={patterns}
-              selected={selectedPattern}
-              onSelect={(name) => {
-                setSelectedPattern(name);
-                reset();
-              }}
-            />
-          </div>
-          <div className="border-t border-[var(--color-border)] pt-4">
-            <h2 className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider mb-2">
-              Configuration
-            </h2>
-            <ControlPanel
-              isRunning={state.isRunning}
-              onRun={run}
-              onReset={reset}
-            />
-          </div>
-        </aside>
-
-        {/* Center: topology + event log */}
-        <main className="flex-1 flex flex-col min-h-0">
+      <main className="flex flex-1 min-h-0 flex-col lg:flex-row gap-2 lg:gap-2.5">
+        {/* Left: Topology visualization */}
+        <div className="flex-[3] glass rounded-2xl overflow-hidden flex flex-col min-h-0">
           <TopologyView nodes={state.nodes} edges={state.edges} />
-          <EventLog events={state.events} />
-        </main>
-      </div>
-
-      {/* Bottom metrics bar */}
-      <MetricsPanel metrics={state.metrics} isRunning={state.isRunning} />
-
-      {/* Error toast */}
-      {state.error && !state.isRunning && (
-        <div className="fixed bottom-20 right-4 glass-strong border border-[var(--color-error)] px-4 py-2 rounded-lg text-sm text-[var(--color-error)] max-w-sm">
-          {state.error}
         </div>
-      )}
+
+        {/* Right: Event log + metrics */}
+        <div className="flex-[2] flex flex-col gap-2 min-h-0">
+          {/* Metrics */}
+          <div className="shrink-0">
+            <MetricsPanel metrics={state.metrics} isRunning={state.isRunning} />
+          </div>
+
+          {/* Event log */}
+          <div className="flex-1 min-h-0 overflow-auto">
+            <EventLog events={state.events} />
+          </div>
+
+          {/* Error */}
+          {state.error && !state.isRunning && (
+            <div className="glass-card rounded-xl border-red-200 px-3.5 py-2 text-[12px] text-red-600 animate-fade-in">
+              <span className="font-medium">Error:</span> {state.error}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Footer: Controls + Pattern selector */}
+      <footer className="shrink-0 glass-strong rounded-2xl px-4 py-2.5 flex flex-col gap-2">
+        <ControlPanel
+          isRunning={state.isRunning}
+          onRun={run}
+          onReset={reset}
+        />
+        <div className="border-t border-[var(--color-border-light)] pt-2">
+          <PatternSelector
+            patterns={patterns}
+            selected={selectedPattern}
+            onSelect={(name) => {
+              setSelectedPattern(name);
+              reset();
+            }}
+            disabled={state.isRunning}
+          />
+        </div>
+      </footer>
     </div>
   );
 }

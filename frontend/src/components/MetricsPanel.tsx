@@ -17,12 +17,16 @@ function MetricCard({
   color: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 px-4 py-2">
-      <span className="text-xs text-[var(--color-text-muted)] uppercase tracking-wider">
+    <div className="flex flex-col items-center gap-0.5 px-4 py-1.5">
+      <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
         {label}
       </span>
-      <span className={`text-lg font-mono font-bold ${color}`}>{value}</span>
-      <span className="text-xs text-[var(--color-text-muted)]">{unit}</span>
+      <span className={`text-base font-mono font-semibold ${color}`}>
+        {value}
+      </span>
+      <span className="text-[10px] text-[var(--color-text-tertiary)]">
+        {unit}
+      </span>
     </div>
   );
 }
@@ -30,7 +34,7 @@ function MetricCard({
 export function MetricsPanel({ metrics, isRunning }: MetricsPanelProps) {
   if (!metrics && !isRunning) {
     return (
-      <div className="glass px-6 py-3 text-center text-[var(--color-text-muted)] text-sm">
+      <div className="glass-card rounded-xl px-5 py-2.5 text-center text-[var(--color-text-tertiary)] text-[12px]">
         Run a simulation to see metrics
       </div>
     );
@@ -42,10 +46,10 @@ export function MetricsPanel({ metrics, isRunning }: MetricsPanelProps) {
       : "0.0";
 
   return (
-    <div className="glass flex items-center justify-around px-4 py-2 gap-2">
+    <div className="glass-card rounded-xl flex items-center justify-around px-3 py-1">
       {isRunning && (
-        <div className="flex items-center gap-2 text-[var(--color-accent)] text-sm">
-          <span className="inline-block w-2 h-2 rounded-full bg-[var(--color-accent)] animate-pulse" />
+        <div className="flex items-center gap-2 text-[var(--color-accent)] text-[12px] font-medium">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
           Running
         </div>
       )}
@@ -59,13 +63,13 @@ export function MetricsPanel({ metrics, isRunning }: MetricsPanelProps) {
         label="p50"
         value={String(metrics?.p50LatencyMs ?? 0)}
         unit="ms"
-        color="text-[var(--color-success)]"
+        color="text-emerald-600"
       />
       <MetricCard
         label="p99"
         value={String(metrics?.p99LatencyMs ?? 0)}
         unit="ms"
-        color="text-[var(--color-warning)]"
+        color="text-amber-600"
       />
       <MetricCard
         label="Throughput"
@@ -79,8 +83,8 @@ export function MetricsPanel({ metrics, isRunning }: MetricsPanelProps) {
         unit="rate"
         color={
           Number(errorRate) > 5
-            ? "text-[var(--color-error)]"
-            : "text-[var(--color-success)]"
+            ? "text-red-600"
+            : "text-emerald-600"
         }
       />
     </div>
