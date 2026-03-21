@@ -45,7 +45,7 @@ export function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden p-2 lg:p-2.5 gap-2 lg:gap-2">
+    <div className="flex flex-col h-screen overflow-hidden p-4 lg:p-5 gap-2.5 lg:gap-3">
       {/* Header */}
       <header className="shrink-0 flex items-center justify-between px-4 py-1">
         <span className="text-base font-normal text-[var(--color-text-primary)] tracking-tight">
