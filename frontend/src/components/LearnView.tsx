@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { PATTERN_CONTENT } from "../data/pattern-content.ts";
 import type { PatternContent, SuggestedScenario } from "../data/pattern-content.ts";
 import { CollapsibleSection } from "./CollapsibleSection.tsx";
 import { MermaidDiagram } from "./MermaidDiagram.tsx";
-import { SuggestedPrompts } from "./SuggestedPrompts.tsx";
 import type { ScenarioConfig } from "../types.ts";
 
 /* ── Icons ──────────────────────────────────────────────────── */
@@ -36,12 +34,6 @@ const iconNodes = (
 const iconTradeoffs = (
   <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" />
-  </svg>
-);
-
-const iconRun = (
-  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
   </svg>
 );
 
@@ -84,96 +76,61 @@ function PatternOverviewGrid() {
   );
 }
 
-/* ── Custom run controls (inline in the card) ────────────────── */
+/* ── Scenario button cards ──────────────────────────────────── */
 
-interface RunControlsProps {
+interface ScenarioCardsProps {
+  scenarios: SuggestedScenario[];
+  onTryScenario: (scenario: SuggestedScenario) => void;
+  onRunCustom: (config: ScenarioConfig) => void;
   isRunning: boolean;
-  onRun: (config: ScenarioConfig) => void;
   onReset: () => void;
 }
 
-function RunControls({ isRunning, onRun, onReset }: RunControlsProps) {
-  const [requestCount, setRequestCount] = useState(20);
-  const [requestsPerSecond, setRequestsPerSecond] = useState(5);
-  const [failureRate, setFailureRate] = useState(0);
-
+function ScenarioCards({ scenarios, onTryScenario, isRunning, onReset }: ScenarioCardsProps) {
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-end gap-3">
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            Requests
-          </label>
-          <input
-            type="number"
-            min={1}
-            max={200}
-            value={requestCount}
-            onChange={(e) => setRequestCount(Number(e.target.value))}
+      <h4 className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
+        Try it
+      </h4>
+      <div className="grid grid-cols-1 gap-2">
+        {scenarios.map((s) => (
+          <button
+            key={s.label}
+            type="button"
+            onClick={() => onTryScenario(s)}
             disabled={isRunning}
-            className="w-20 bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] px-2.5 py-1.5 rounded-lg text-sm font-mono border border-[var(--color-border-light)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-40"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            Rate (rps)
-          </label>
-          <input
-            type="number"
-            min={1}
-            max={50}
-            value={requestsPerSecond}
-            onChange={(e) => setRequestsPerSecond(Number(e.target.value))}
-            disabled={isRunning}
-            className="w-20 bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] px-2.5 py-1.5 rounded-lg text-sm font-mono border border-[var(--color-border-light)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-40"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            Failure %
-          </label>
-          <input
-            type="number"
-            min={0}
-            max={100}
-            value={failureRate}
-            onChange={(e) => setFailureRate(Number(e.target.value))}
-            disabled={isRunning}
-            className="w-20 bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] px-2.5 py-1.5 rounded-lg text-sm font-mono border border-[var(--color-border-light)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-40"
-          />
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={() =>
-            onRun({
-              requestCount,
-              requestsPerSecond,
-              ...(failureRate > 0
-                ? { failureInjection: { nodeFailures: { backend: failureRate / 100 } } }
-                : {}),
-            })
-          }
-          disabled={isRunning}
-          className="rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:brightness-110 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/15"
-        >
-          {isRunning ? (
-            <span className="flex items-center gap-1.5">
-              <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin-slow" />
-              Running
+            className="group flex items-start gap-3 rounded-xl border border-[var(--color-border-light)] glass-card px-3.5 py-3 text-left transition-all hover:border-[var(--color-accent)]/30 hover:shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--color-accent-light)] shrink-0 mt-0.5 group-hover:bg-[var(--color-accent)] transition-colors">
+              <svg className="h-3.5 w-3.5 text-[var(--color-accent)] group-hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+              </svg>
             </span>
-          ) : (
-            "Run Simulation"
-          )}
-        </button>
+            <div className="min-w-0 flex-1">
+              <span className="text-[13px] font-semibold text-[var(--color-text-primary)] block">
+                {s.label}
+              </span>
+              <span className="text-[11px] text-[var(--color-text-tertiary)] leading-relaxed block mt-0.5">
+                {s.description}
+              </span>
+              <span className="text-[10px] font-mono text-[var(--color-text-tertiary)] mt-1 block">
+                {s.requestCount} req · {s.requestsPerSecond} rps
+                {s.failureInjection?.nodeFailures?.["backend"]
+                  ? ` · ${Math.round((s.failureInjection.nodeFailures["backend"] ?? 0) * 100)}% failure`
+                  : ""}
+              </span>
+            </div>
+          </button>
+        ))}
+      </div>
+      {isRunning && (
         <button
           onClick={onReset}
-          disabled={isRunning}
-          className="rounded-xl px-3 py-1.5 text-sm font-medium text-[var(--color-text-tertiary)] hover:bg-black/[0.03] disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+          className="text-[12px] text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] transition-colors"
         >
-          Reset
+          Cancel simulation
         </button>
-      </div>
+      )}
     </div>
   );
 }
@@ -216,6 +173,7 @@ function PatternContentView({
       </div>
 
       <div className="space-y-2.5">
+        {/* When to Use */}
         <CollapsibleSection title="When to Use" icon={iconTarget} defaultOpen>
           <ul className="space-y-1.5">
             {pattern.whenToUse.map((item) => (
@@ -227,11 +185,13 @@ function PatternContentView({
           </ul>
         </CollapsibleSection>
 
+        {/* Architecture */}
         <CollapsibleSection title="Architecture" icon={iconArch} defaultOpen>
           <MermaidDiagram source={pattern.architectureMermaid} />
         </CollapsibleSection>
 
-        <CollapsibleSection title="How It Works" icon={iconSteps} defaultOpen>
+        {/* How It Works — collapsed by default to save space */}
+        <CollapsibleSection title="How It Works" icon={iconSteps}>
           <ol className="space-y-2">
             {pattern.howItWorks.map((step, i) => (
               <li key={step} className="flex items-start gap-2.5 text-[13px] text-[var(--color-text-secondary)] leading-relaxed">
@@ -246,6 +206,7 @@ function PatternContentView({
           </ol>
         </CollapsibleSection>
 
+        {/* Node Roles */}
         <CollapsibleSection title="Node Roles" icon={iconNodes}>
           <div className="overflow-x-auto">
             <table className="w-full text-[12px]">
@@ -269,6 +230,7 @@ function PatternContentView({
           </div>
         </CollapsibleSection>
 
+        {/* Tradeoffs */}
         <CollapsibleSection title="Tradeoffs" icon={iconTradeoffs}>
           <div className="space-y-3">
             <div>
@@ -296,18 +258,16 @@ function PatternContentView({
           </div>
         </CollapsibleSection>
 
-        {/* Simulate — inline controls */}
-        <CollapsibleSection title="Simulate" icon={iconRun} defaultOpen>
-          <div className="space-y-4">
-            <SuggestedPrompts scenarios={pattern.suggestedScenarios} onTryScenario={onTryScenario} />
-            <div className="border-t border-[var(--color-border-light)] pt-3">
-              <h5 className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] mb-2">
-                Custom configuration
-              </h5>
-              <RunControls isRunning={isRunning} onRun={onRunCustom} onReset={onReset} />
-            </div>
-          </div>
-        </CollapsibleSection>
+        {/* Scenario cards — replaces ugly raw inputs */}
+        <div className="pt-2">
+          <ScenarioCards
+            scenarios={pattern.suggestedScenarios}
+            onTryScenario={onTryScenario}
+            onRunCustom={onRunCustom}
+            isRunning={isRunning}
+            onReset={onReset}
+          />
+        </div>
       </div>
     </div>
   );

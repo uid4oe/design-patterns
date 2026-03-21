@@ -66,7 +66,7 @@ export function App() {
 
       {/* Main panels */}
       <main className="flex flex-1 min-h-0 flex-col lg:flex-row gap-2 lg:gap-2.5">
-        {/* LEFT — Educational content + simulation controls */}
+        {/* LEFT — Educational content */}
         <div className="flex-[3] min-h-0 glass rounded-2xl overflow-hidden">
           <LearnView
             selectedPattern={selectedPattern}
@@ -77,12 +77,11 @@ export function App() {
           />
         </div>
 
-        {/* RIGHT — Simulation output (like Chat in reference) */}
+        {/* RIGHT — Simulation output */}
         <div className="flex-[2] min-h-0 flex flex-col gap-2">
-          {/* Main visualization area */}
+          {/* Topology + event log in one card */}
           <div className="flex-1 min-h-0 glass-strong rounded-2xl overflow-hidden flex flex-col">
             {state.nodes.length === 0 ? (
-              /* Empty state — like Chat empty state in reference */
               <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
                 <svg className="h-10 w-10 mb-3 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-13.5 0a3 3 0 0 1-3-3m3 3h13.5m0-3a3 3 0 0 0 3-3m-3 3a3 3 0 0 1 0 6m3-9a3 3 0 0 0-3-3m3 3h-13.5a3 3 0 0 1 0-6h13.5a3 3 0 0 1 3 3" />
@@ -92,21 +91,17 @@ export function App() {
             ) : (
               <>
                 <TopologyView nodes={state.nodes} edges={state.edges} />
-                {state.events.length > 0 && (
-                  <div className="shrink-0 border-t border-[var(--color-border-light)]">
-                    <MetricsPanel metrics={state.metrics} isRunning={state.isRunning} />
-                  </div>
-                )}
-                {state.events.length > 0 && (
-                  <div className="shrink-0 border-t border-[var(--color-border-light)] max-h-36 overflow-y-auto custom-scrollbar">
-                    <EventLog events={state.events} />
-                  </div>
-                )}
+                <div className="shrink-0 border-t border-[var(--color-border-light)]">
+                  <MetricsPanel metrics={state.metrics} isRunning={state.isRunning} />
+                </div>
+                <div className="shrink-0 border-t border-[var(--color-border-light)] max-h-36 overflow-y-auto custom-scrollbar">
+                  <EventLog events={state.events} />
+                </div>
               </>
             )}
           </div>
 
-          {/* Flow summary — like AgentFlowSummary in reference */}
+          {/* Flow summary */}
           {state.nodes.length > 0 && (
             <div className="shrink-0 glass-strong rounded-2xl overflow-hidden">
               <SimulationFlowSummary
@@ -125,15 +120,19 @@ export function App() {
         </div>
       </main>
 
-      {/* Footer — pattern selector in centered bar */}
+      {/* Footer — input bar style, centered */}
       <div className="shrink-0">
         <div className="max-w-2xl w-full mx-auto rounded-2xl glass-strong px-3 py-2">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center">
             <PatternSelector
               selected={selectedPattern}
               onSelect={handlePatternSelect}
               isStreaming={state.isRunning}
             />
+            <div className="flex-1" />
+            <span className="text-[11px] text-[var(--color-text-tertiary)] pointer-events-none select-none shrink-0 hidden sm:block">
+              System Design &amp; Distribution
+            </span>
           </div>
         </div>
       </div>
