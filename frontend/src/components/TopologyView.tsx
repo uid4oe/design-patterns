@@ -2,7 +2,6 @@ import {
   ReactFlow,
   Background,
   Handle,
-  useReactFlow,
   ReactFlowProvider,
   type Node,
   type Edge,
@@ -10,7 +9,6 @@ import {
   Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useEffect, useRef } from "react";
 import type { TopologyNode, TopologyEdge } from "../types.ts";
 
 interface TopologyViewProps {
@@ -153,30 +151,14 @@ function layoutEdges(topologyEdges: TopologyEdge[], activeEdgeKey: string | null
 function TopologyInner({ nodes, edges, activeEdgeKey, activeNodeId }: TopologyViewProps) {
   const flowNodes = layoutNodes(nodes, activeNodeId ?? null);
   const flowEdges = layoutEdges(edges, activeEdgeKey ?? null);
-  const { fitView } = useReactFlow();
-  const hasFit = useRef(false);
-
-  useEffect(() => {
-    // Reset fit flag when nodes are cleared (new simulation)
-    if (nodes.length === 0) {
-      hasFit.current = false;
-    }
-  }, [nodes.length]);
-
-  useEffect(() => {
-    // Fit once when nodes first appear, instantly (no animation)
-    if (nodes.length > 0 && !hasFit.current) {
-      hasFit.current = true;
-      const timer = setTimeout(() => fitView({ padding: 0.3, duration: 0 }), 20);
-      return () => clearTimeout(timer);
-    }
-  }, [nodes.length, fitView]);
 
   return (
     <ReactFlow
       nodes={flowNodes}
       edges={flowEdges}
       nodeTypes={nodeTypes}
+      fitView
+      fitViewOptions={{ padding: 0.3 }}
       panOnDrag
       zoomOnScroll={false}
       preventScrolling={false}
