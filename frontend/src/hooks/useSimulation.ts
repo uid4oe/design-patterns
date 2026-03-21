@@ -172,7 +172,7 @@ export function useSimulation(activePattern: string | null) {
         const response = await fetch(`/api/patterns/${activePattern}/run`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ scenario }),
+          body: JSON.stringify({ scenario: { ...scenario, realTime: true } }),
           signal: controller.signal,
         });
 

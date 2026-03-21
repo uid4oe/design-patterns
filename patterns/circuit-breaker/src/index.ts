@@ -21,16 +21,18 @@ export function createSimulator(): PatternSimulator {
       emitter: SimulationEmitter,
     ) {
       const seed = scenario.seed ?? Date.now();
+      const realTime = scenario.realTime ?? false;
       const random = new SeededRandom(seed);
       const clock = new SimulationClock();
       const collector = new MetricCollector();
       const requestResults: RequestResult[] = [];
 
-      // Create nodes
+      // Create nodes — pass realTime for frontend visualization pacing
       const backend = new BackendNode(
         { name: "backend", role: "service", latencyMs: 30 },
         seed + 1,
         clock,
+        realTime,
       );
       const breaker = new CircuitBreakerNode(
         {
@@ -42,11 +44,13 @@ export function createSimulator(): PatternSimulator {
         },
         seed + 2,
         clock,
+        realTime,
       );
       const client = new ClientNode(
         { name: "client", role: "request-generator", latencyMs: 0 },
         seed + 3,
         clock,
+        realTime,
       );
 
       // Apply failure injection
@@ -73,10 +77,10 @@ export function createSimulator(): PatternSimulator {
           metadata: { index: i },
         };
 
-        // Advance clock by interval between requests
+        // Pace requests — real-time delay for visualization, virtual time for tests
         if (i > 0) {
           const jitter = random.between(0.8, 1.2);
-          await clock.delay(Math.round(intervalMs * jitter));
+          await clock.delay(Math.round(intervalMs * jitter), realTime);
         }
 
         // Client → Breaker

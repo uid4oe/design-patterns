@@ -34,11 +34,12 @@ export class CircuitBreakerNode extends BaseNode {
   private acceptedCount = 0;
   private rejectedCount = 0;
 
-  constructor(config: CircuitBreakerConfig, seed = 0, clock?: SimulationClock) {
+  constructor(config: CircuitBreakerConfig, seed = 0, clock?: SimulationClock, realTime = false) {
     super(
       { name: config.name, role: "circuit-breaker", initialState: "closed", latencyMs: 0 },
       seed,
       clock,
+      realTime,
     );
     this.failureThreshold = config.failureThreshold;
     this.cooldownMs = config.cooldownMs;

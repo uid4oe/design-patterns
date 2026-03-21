@@ -10,6 +10,8 @@ export interface ScenarioConfig {
     partitions?: string[][];
   };
   seed?: number;
+  /** Enable real-time pacing for visualization. Default false (fast/virtual time). */
+  realTime?: boolean;
 }
 
 export interface RequestResult {
