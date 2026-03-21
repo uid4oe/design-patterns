@@ -37,8 +37,8 @@ function SimulationNodeComponent({ data }: NodeProps) {
         background: colors.bg,
         border: `2px solid ${colors.border}`,
         borderRadius: "0.75rem",
-        padding: "10px 14px",
-        minWidth: 130,
+        padding: "8px 12px",
+        minWidth: 120,
         fontFamily: "system-ui, -apple-system, sans-serif",
         backdropFilter: "blur(12px)",
         boxShadow: isTarget
@@ -133,16 +133,16 @@ function layoutNodes(topologyNodes: TopologyNode[], activeNodeId: string | null)
   }));
 }
 
-/** Grid layout for topologies without a central hub (e.g. CQRS dual paths) */
+/** Grid layout: 2 columns, nodes stacked vertically per column */
 function layoutGrid(
   topologyNodes: TopologyNode[],
   activeNodeId: string | null,
 ): Node[] {
-  const cols = Math.ceil(topologyNodes.length / 2);
-  const spacingX = 200;
-  const spacingY = 120;
-  const totalWidth = (cols - 1) * spacingX;
-  const startX = -totalWidth / 2;
+  const cols = 2;
+  const spacingX = 220;
+  const spacingY = 100;
+  const rows = Math.ceil(topologyNodes.length / cols);
+  const totalHeight = (rows - 1) * spacingY;
 
   return topologyNodes.map((tn, i) => {
     const col = i % cols;
@@ -151,7 +151,7 @@ function layoutGrid(
       id: tn.id,
       type: "simulation",
       data: { ...tn, isActiveTarget: tn.id === activeNodeId },
-      position: { x: startX + col * spacingX, y: -spacingY / 2 + row * spacingY },
+      position: { x: -spacingX / 2 + col * spacingX, y: -totalHeight / 2 + row * spacingY },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
     };
