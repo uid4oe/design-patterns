@@ -45,9 +45,9 @@ export function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden p-2 lg:p-2.5 gap-2 lg:gap-2">
+    <div className="flex flex-col h-screen overflow-hidden p-3 lg:p-4 gap-2.5 lg:gap-3">
       {/* Header */}
-      <header className="shrink-0 flex items-center justify-between px-4 py-1">
+      <header className="shrink-0 flex items-center justify-between px-2 py-0.5">
         <span className="text-base font-normal text-[var(--color-text-primary)] tracking-tight">
           Design Patterns
         </span>
@@ -65,7 +65,7 @@ export function App() {
       </header>
 
       {/* Main panels */}
-      <main className="flex flex-1 min-h-0 flex-col lg:flex-row gap-2 lg:gap-2.5">
+      <main className="flex flex-1 min-h-0 flex-col lg:flex-row gap-2.5 lg:gap-3">
         {/* LEFT — Educational content */}
         <div className="flex-[3] min-h-0 glass rounded-2xl overflow-hidden">
           <LearnView
@@ -78,8 +78,7 @@ export function App() {
         </div>
 
         {/* RIGHT — Simulation output */}
-        <div className="flex-[2] min-h-0 flex flex-col gap-2">
-          {/* Topology + event log in one card */}
+        <div className="flex-[2] min-h-0 flex flex-col gap-2.5">
           <div className="flex-1 min-h-0 glass-strong rounded-2xl overflow-hidden flex flex-col">
             {state.nodes.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
@@ -101,7 +100,6 @@ export function App() {
             )}
           </div>
 
-          {/* Flow summary */}
           {state.nodes.length > 0 && (
             <div className="shrink-0 glass-strong rounded-2xl overflow-hidden">
               <SimulationFlowSummary
@@ -120,11 +118,11 @@ export function App() {
         </div>
       </main>
 
-      {/* Input bar — identical structure to reference */}
+      {/* Bottom bar */}
       <div className="shrink-0">
-        <div className="max-w-2xl w-full mx-auto rounded-2xl glass-strong px-3 py-2 transition-shadow">
-          {/* Top row: status line (replaces textarea in reference) */}
-          <div className="flex items-center gap-2 px-1 py-1.5">
+        <div className="max-w-3xl w-full mx-auto rounded-2xl glass-strong px-4 py-2.5 transition-shadow">
+          {/* Top row: status */}
+          <div className="flex items-center gap-2 px-1 py-1">
             {state.isRunning ? (
               <span className="flex-1 flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
                 <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin-slow" />
@@ -143,7 +141,7 @@ export function App() {
               <button
                 type="button"
                 onClick={reset}
-                className="shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/15"
+                className="shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none transition-all shadow-sm shadow-blue-500/15"
               >
                 <span className="flex items-center gap-1.5">
                   <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin-slow" />
@@ -152,7 +150,7 @@ export function App() {
               </button>
             )}
           </div>
-          {/* Bottom row: pattern tabs + hint */}
+          {/* Bottom row: pattern tabs */}
           <div className="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-[var(--color-border-light)]">
             <PatternSelector
               selected={selectedPattern}
