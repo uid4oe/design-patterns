@@ -45,9 +45,9 @@ export function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden p-3 lg:p-4 gap-2.5 lg:gap-3">
-      {/* Header */}
-      <header className="shrink-0 flex items-center justify-between px-2 py-0.5">
+    <div className="flex flex-col h-screen overflow-hidden p-2 lg:p-2.5 gap-2 lg:gap-2">
+      {/* Minimal header */}
+      <header className="shrink-0 flex items-center justify-between px-4 py-1">
         <span className="text-base font-normal text-[var(--color-text-primary)] tracking-tight">
           Design Patterns
         </span>
@@ -65,8 +65,8 @@ export function App() {
       </header>
 
       {/* Main panels */}
-      <main className="flex flex-1 min-h-0 flex-col lg:flex-row gap-2.5 lg:gap-3">
-        {/* LEFT — Educational content */}
+      <main className="flex flex-1 min-h-0 flex-col lg:flex-row gap-2 lg:gap-2.5">
+        {/* LEFT — Educational content (like RightPanel/LearnView in ref) */}
         <div className="flex-[3] min-h-0 glass rounded-2xl overflow-hidden">
           <LearnView
             selectedPattern={selectedPattern}
@@ -77,8 +77,8 @@ export function App() {
           />
         </div>
 
-        {/* RIGHT — Simulation output */}
-        <div className="flex-[2] min-h-0 flex flex-col gap-2.5">
+        {/* RIGHT — Simulation (like Chat + AgentFlowSummary in ref) */}
+        <div className="flex-[2] min-h-0 flex flex-col gap-2">
           <div className="flex-1 min-h-0 glass-strong rounded-2xl overflow-hidden flex flex-col">
             {state.nodes.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-[var(--color-text-tertiary)]">
@@ -99,7 +99,6 @@ export function App() {
               </>
             )}
           </div>
-
           {state.nodes.length > 0 && (
             <div className="shrink-0 glass-strong rounded-2xl overflow-hidden">
               <SimulationFlowSummary
@@ -109,7 +108,6 @@ export function App() {
               />
             </div>
           )}
-
           {state.error && !state.isRunning && (
             <div className="shrink-0 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 animate-fade-in">
               {state.error}
@@ -118,22 +116,22 @@ export function App() {
         </div>
       </main>
 
-      {/* Bottom bar */}
+      {/* Input bar — identical to reference */}
       <div className="shrink-0">
-        <div className="max-w-3xl w-full mx-auto rounded-2xl glass-strong px-4 py-2.5 transition-shadow">
-          {/* Top row: status */}
-          <div className="flex items-center gap-2 px-1 py-1">
+        <div className="max-w-2xl w-full mx-auto rounded-2xl glass-strong px-3 py-2 transition-shadow">
+          {/* Top row: status (replaces textarea + send in ref) */}
+          <div className="flex items-center gap-2">
             {state.isRunning ? (
-              <span className="flex-1 flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <span className="flex-1 flex items-center gap-2 resize-none bg-transparent px-1 py-1.5 text-sm text-[var(--color-text-secondary)]">
                 <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin-slow" />
                 Simulation running…
               </span>
             ) : state.metrics ? (
-              <span className="flex-1 text-sm text-[var(--color-text-secondary)]">
+              <span className="flex-1 bg-transparent px-1 py-1.5 text-sm text-[var(--color-text-secondary)]">
                 {state.metrics.totalRequests} requests · {state.metrics.successCount} ok · {state.metrics.errorCount} errors · p99 {state.metrics.p99LatencyMs}ms
               </span>
             ) : (
-              <span className="flex-1 text-sm text-[var(--color-text-tertiary)]">
+              <span className="flex-1 bg-transparent px-1 py-1.5 text-sm text-[var(--color-text-tertiary)]">
                 Select a pattern and run a scenario
               </span>
             )}
