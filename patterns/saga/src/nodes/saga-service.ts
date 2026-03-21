@@ -9,17 +9,21 @@ import type {
 
 /**
  * Base class for saga service nodes. Each service has a forward operation
- * (handleRequest) and a compensating operation (compensate).
+ * and a compensating operation. Both go through BaseNode.run() so they
+ * respect latency simulation, failure injection, capacity, and metrics.
  */
 export abstract class SagaService extends SimpleNode {
   private readonly compensationDetail: string;
   private readonly forwardDetail: string;
-  private compensationCount = 0;
+  private readonly forwardOutput: string;
+  private readonly compensationOutput: string;
 
   constructor(
     config: NodeConfig,
     forwardDetail: string,
     compensationDetail: string,
+    forwardOutput: string,
+    compensationOutput: string,
     seed?: number,
     clock?: SimulationClock,
     realTime?: boolean,
@@ -27,93 +31,63 @@ export abstract class SagaService extends SimpleNode {
     super(config, seed, clock, realTime);
     this.forwardDetail = forwardDetail;
     this.compensationDetail = compensationDetail;
+    this.forwardOutput = forwardOutput;
+    this.compensationOutput = compensationOutput;
   }
 
-  protected getProcessingDetail(_request: SimulationRequest): string {
-    return this.forwardDetail;
+  protected getProcessingDetail(request: SimulationRequest): string {
+    const isCompensation = request.metadata?.["compensate"] === true;
+    return isCompensation ? `compensating: ${this.compensationDetail}` : this.forwardDetail;
   }
 
-  /** Run compensation (reverse action) for this service. */
-  async compensate(
-    request: SimulationRequest,
-    emitter: SimulationEmitter,
-  ): Promise<NodeResult> {
-    this.compensationCount++;
-    emitter.emit({
-      type: "processing",
-      node: this.name,
-      requestId: request.id,
-      detail: `compensating: ${this.compensationDetail}`,
-    });
+  protected async handleRequest(request: SimulationRequest): Promise<NodeResult> {
+    const isCompensation = request.metadata?.["compensate"] === true;
     return {
-      output: `${this.name}-compensated`,
+      output: isCompensation
+        ? `${this.compensationOutput}-${request.id}`
+        : `${this.forwardOutput}-${request.id}`,
       durationMs: 0,
       success: true,
       metrics: this.getMetrics(),
     };
   }
 
-  getCompensationCount(): number {
-    return this.compensationCount;
+  /**
+   * Run compensation through BaseNode.run() so it gets full simulation:
+   * latency, failure injection, capacity checks, metrics tracking.
+   */
+  async compensate(
+    request: SimulationRequest,
+    emitter: SimulationEmitter,
+  ): Promise<NodeResult> {
+    const compensateRequest: SimulationRequest = {
+      ...request,
+      metadata: { ...request.metadata, compensate: true },
+    };
+    return this.run(compensateRequest, emitter);
   }
 }
 
 export class OrderService extends SagaService {
   constructor(config: NodeConfig, seed?: number, clock?: SimulationClock, realTime?: boolean) {
-    super(config, "creating order", "cancelling order", seed, clock, realTime);
-  }
-
-  protected async handleRequest(request: SimulationRequest): Promise<NodeResult> {
-    return {
-      output: `order-created-${request.id}`,
-      durationMs: 0,
-      success: true,
-      metrics: this.getMetrics(),
-    };
+    super(config, "creating order", "cancelling order", "order-created", "order-cancelled", seed, clock, realTime);
   }
 }
 
 export class PaymentService extends SagaService {
   constructor(config: NodeConfig, seed?: number, clock?: SimulationClock, realTime?: boolean) {
-    super(config, "processing payment", "refunding payment", seed, clock, realTime);
-  }
-
-  protected async handleRequest(request: SimulationRequest): Promise<NodeResult> {
-    return {
-      output: `payment-processed-${request.id}`,
-      durationMs: 0,
-      success: true,
-      metrics: this.getMetrics(),
-    };
+    super(config, "processing payment", "refunding payment", "payment-processed", "payment-refunded", seed, clock, realTime);
   }
 }
 
 export class InventoryService extends SagaService {
   constructor(config: NodeConfig, seed?: number, clock?: SimulationClock, realTime?: boolean) {
-    super(config, "reserving inventory", "releasing inventory", seed, clock, realTime);
-  }
-
-  protected async handleRequest(request: SimulationRequest): Promise<NodeResult> {
-    return {
-      output: `inventory-reserved-${request.id}`,
-      durationMs: 0,
-      success: true,
-      metrics: this.getMetrics(),
-    };
+    super(config, "reserving inventory", "releasing inventory", "inventory-reserved", "inventory-released", seed, clock, realTime);
   }
 }
 
 export class ShippingService extends SagaService {
   constructor(config: NodeConfig, seed?: number, clock?: SimulationClock, realTime?: boolean) {
-    super(config, "scheduling shipment", "cancelling shipment", seed, clock, realTime);
-  }
-
-  protected async handleRequest(request: SimulationRequest): Promise<NodeResult> {
-    return {
-      output: `shipment-scheduled-${request.id}`,
-      durationMs: 0,
-      success: true,
-      metrics: this.getMetrics(),
-    };
+    super(config, "scheduling shipment", "cancelling shipment", "shipment-scheduled", "shipment-cancelled", seed, clock, realTime);
   }
 }

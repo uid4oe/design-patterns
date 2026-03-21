@@ -31,7 +31,6 @@ export class CircuitBreakerNode extends BaseNode {
   private openedAtMs = 0;
   private halfOpenProbes = 0;
   private readonly backend: BackendNode;
-  private acceptedCount = 0;
   private rejectedCount = 0;
 
   constructor(config: CircuitBreakerConfig, seed = 0, clock?: SimulationClock, realTime = false) {
@@ -120,7 +119,6 @@ export class CircuitBreakerNode extends BaseNode {
       }
     } else {
       this.consecutiveFailures = 0;
-      this.acceptedCount++;
     }
 
     return result;
@@ -180,7 +178,6 @@ export class CircuitBreakerNode extends BaseNode {
 
     if (result.success) {
       this.consecutiveFailures = 0;
-      this.acceptedCount++;
       this.setState("closed", "probe succeeded", emitter);
       emitter.emit({
         type: "metric",

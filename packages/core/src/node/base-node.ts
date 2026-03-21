@@ -59,7 +59,7 @@ export abstract class BaseNode {
     request: SimulationRequest,
     emitter: SimulationEmitter,
   ): Promise<NodeResult> {
-    const startTime = Date.now();
+    const startTime = this.clock.now();
 
     if (this.activeRequests >= this.capacity) {
       const errorMsg = `capacity exceeded (${this.activeRequests}/${this.capacity})`;
@@ -91,7 +91,7 @@ export abstract class BaseNode {
           message: errorMsg,
           recoverable: true,
         });
-        const durationMs = Date.now() - startTime;
+        const durationMs = this.clock.now() - startTime;
         this.totalLatencyMs += durationMs;
         this.totalHandled++;
         return {
