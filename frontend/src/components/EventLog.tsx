@@ -86,7 +86,7 @@ export function EventLog({ events }: EventLogProps) {
       {visibleEvents.map((event, i) => (
         <div
           key={i}
-          className={`font-mono text-[11px] leading-relaxed flex items-start gap-1.5 ${eventColor(event.type)}`}
+          className={`animate-message-in font-mono text-[11px] leading-relaxed flex items-start gap-1.5 ${eventColor(event.type)}`}
         >
           <span className="shrink-0 w-3 text-center opacity-50">
             {eventIcon(event.type)}

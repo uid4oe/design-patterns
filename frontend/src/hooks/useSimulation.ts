@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { flushSync } from "react-dom";
 import type {
   SimulationEvent,
   SimulationState,
@@ -201,7 +202,8 @@ export function useSimulation(activePattern: string | null) {
             if (!part.startsWith("data: ")) continue;
             try {
               const event = JSON.parse(part.slice(6)) as SimulationEvent;
-              setState((prev) => reduceEvent(prev, event));
+              // flushSync breaks React 18 batching so topology updates per-event
+              flushSync(() => setState((prev) => reduceEvent(prev, event)));
             } catch {
               // Skip malformed events
             }

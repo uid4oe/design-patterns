@@ -6,6 +6,7 @@ import { TopologyView } from "./components/TopologyView.tsx";
 import { MetricsPanel } from "./components/MetricsPanel.tsx";
 import { EventLog } from "./components/EventLog.tsx";
 import { LearnView } from "./components/LearnView.tsx";
+import { SimulationFlowSummary } from "./components/SimulationFlowSummary.tsx";
 import type { PatternInfo, ScenarioConfig } from "./types.ts";
 import type { SuggestedScenario } from "./data/pattern-content.ts";
 
@@ -64,12 +65,23 @@ export function App() {
           />
         </div>
 
-        {/* RIGHT — Topology graph + Stats */}
+        {/* RIGHT — Topology graph + Flow + Stats */}
         <div className="flex-[2] min-h-0 flex flex-col gap-2">
           {/* Topology visualization */}
           <div className="flex-1 min-h-0 glass-strong rounded-2xl overflow-hidden">
             <TopologyView nodes={state.nodes} edges={state.edges} />
           </div>
+
+          {/* Simulation flow summary (like AgentFlowSummary) */}
+          {state.nodes.length > 0 && (
+            <div className="shrink-0 glass-strong rounded-2xl overflow-hidden">
+              <SimulationFlowSummary
+                nodes={state.nodes}
+                edges={state.edges}
+                isRunning={state.isRunning}
+              />
+            </div>
+          )}
 
           {/* Metrics summary */}
           <div className="shrink-0">

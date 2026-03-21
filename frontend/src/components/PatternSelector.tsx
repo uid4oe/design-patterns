@@ -32,22 +32,31 @@ export function PatternSelector({
   }
 
   return (
-    <div className="flex items-center gap-1">
-      {patterns.map((p) => (
-        <button
-          key={p.name}
-          onClick={() => onSelect(p.name)}
-          disabled={disabled}
-          className={`shrink-0 rounded-lg px-2.5 py-1 text-[12px] font-medium transition-all duration-150 ${
-            selected === p.name
-              ? "bg-[var(--color-accent)] text-white shadow-sm shadow-blue-500/15"
-              : "text-[var(--color-text-tertiary)] hover:bg-black/[0.03]"
-          } ${disabled ? "opacity-40 cursor-not-allowed" : ""}`}
-        >
-          <span className="mr-1">{PATTERN_ICONS[p.name] ?? "📦"}</span>
-          {p.name}
-        </button>
-      ))}
+    <div role="group" className="flex items-center gap-1 shrink-0">
+      {patterns.map((p) => {
+        const isActive = selected === p.name;
+        return (
+          <button
+            key={p.name}
+            onClick={() => onSelect(p.name)}
+            aria-pressed={isActive}
+            disabled={disabled && !isActive}
+            className={`shrink-0 rounded-lg px-2.5 py-1 text-[12px] font-medium flex items-center gap-1.5 transition-all duration-150 ${
+              isActive
+                ? "bg-[var(--color-accent)] text-white shadow-sm shadow-blue-500/15"
+                : disabled
+                  ? "text-[var(--color-text-tertiary)] opacity-40 cursor-not-allowed"
+                  : "text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)] hover:bg-black/[0.03]"
+            }`}
+          >
+            <span>{PATTERN_ICONS[p.name] ?? "📦"}</span>
+            {p.name}
+            {isActive && disabled && (
+              <span className="h-3 w-3 rounded-full border-[1.5px] border-white/40 border-t-white animate-spin-slow" />
+            )}
+          </button>
+        );
+      })}
     </div>
   );
 }
