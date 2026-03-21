@@ -114,7 +114,7 @@ function layoutNodes(topologyNodes: TopologyNode[], activeNodeId: string | null)
   }
 
   // Simple horizontal for small topologies (≤3 nodes)
-  const spacing = 180;
+  const spacing = 240;
   const totalWidth = (topologyNodes.length - 1) * spacing;
   const startX = -totalWidth / 2;
 
