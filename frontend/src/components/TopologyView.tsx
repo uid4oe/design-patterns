@@ -5,10 +5,11 @@ import {
   ReactFlowProvider,
   type Node,
   type Edge,
+  type NodeProps,
   Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo, useEffect } from "react";
+import { useEffect, memo } from "react";
 import type { TopologyNode, TopologyEdge } from "../types.ts";
 
 interface TopologyViewProps {
@@ -24,8 +25,10 @@ const STATE_COLORS: Record<string, { border: string; bg: string; dot: string }> 
   failed: { border: "#dc2626", bg: "rgba(254, 226, 226, 0.6)", dot: "#dc2626" },
 };
 
-function SimulationNode({ data }: { data: TopologyNode }) {
-  const colors = STATE_COLORS[data.state] ?? STATE_COLORS["idle"];
+/** Custom node — NOT memoized so it re-renders on every data change */
+function SimulationNodeComponent({ data }: NodeProps) {
+  const nodeData = data as unknown as TopologyNode;
+  const colors = STATE_COLORS[nodeData.state] ?? STATE_COLORS["idle"];
 
   return (
     <div
@@ -38,6 +41,7 @@ function SimulationNode({ data }: { data: TopologyNode }) {
         fontFamily: "system-ui, -apple-system, sans-serif",
         backdropFilter: "blur(12px)",
         boxShadow: "0 1px 2px rgba(0,0,0,0.03), 0 4px 16px rgba(0,0,0,0.02)",
+        transition: "border-color 0.3s, background 0.3s",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
@@ -48,7 +52,8 @@ function SimulationNode({ data }: { data: TopologyNode }) {
             borderRadius: "50%",
             background: colors.dot,
             display: "inline-block",
-            animation: data.state === "active" ? "pulse 2s infinite" : undefined,
+            transition: "background 0.3s",
+            animation: nodeData.state === "active" ? "pulse 2s infinite" : undefined,
           }}
         />
         <span style={{
@@ -57,11 +62,11 @@ function SimulationNode({ data }: { data: TopologyNode }) {
           fontWeight: 600,
           color: "#0f172a",
         }}>
-          {data.id}
+          {nodeData.id}
         </span>
       </div>
-      <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 500 }}>{data.role}</div>
-      {data.metrics && (
+      <div style={{ fontSize: 10, color: "#94a3b8", fontWeight: 500 }}>{nodeData.role}</div>
+      {nodeData.metrics && (
         <div style={{
           marginTop: 6,
           display: "flex",
@@ -70,10 +75,10 @@ function SimulationNode({ data }: { data: TopologyNode }) {
           fontFamily: "ui-monospace, monospace",
           color: "#475569",
         }}>
-          <span>{data.metrics.requests} req</span>
-          <span>{Math.round(data.metrics.avgLatencyMs)}ms</span>
-          {data.metrics.errors > 0 && (
-            <span style={{ color: "#dc2626" }}>{data.metrics.errors} err</span>
+          <span>{nodeData.metrics.requests} req</span>
+          <span>{Math.round(nodeData.metrics.avgLatencyMs)}ms</span>
+          {nodeData.metrics.errors > 0 && (
+            <span style={{ color: "#dc2626" }}>{nodeData.metrics.errors} err</span>
           )}
         </div>
       )}
@@ -81,7 +86,7 @@ function SimulationNode({ data }: { data: TopologyNode }) {
   );
 }
 
-const nodeTypes = { simulation: SimulationNode };
+const nodeTypes = { simulation: SimulationNodeComponent };
 
 function layoutNodes(topologyNodes: TopologyNode[]): Node[] {
   const spacing = 200;
@@ -91,7 +96,7 @@ function layoutNodes(topologyNodes: TopologyNode[]): Node[] {
   return topologyNodes.map((tn, i) => ({
     id: tn.id,
     type: "simulation",
-    data: tn,
+    data: { ...tn },
     position: { x: startX + i * spacing, y: 0 },
     sourcePosition: Position.Right,
     targetPosition: Position.Left,
@@ -116,19 +121,19 @@ function layoutEdges(topologyEdges: TopologyEdge[]): Edge[] {
   }));
 }
 
-/** Inner component that has access to useReactFlow for fitView on node changes */
 function TopologyInner({ nodes, edges }: TopologyViewProps) {
-  const flowNodes = useMemo(() => layoutNodes(nodes), [nodes]);
-  const flowEdges = useMemo(() => layoutEdges(edges), [edges]);
+  // No useMemo — recalculate every render so React Flow sees data changes
+  const flowNodes = layoutNodes(nodes);
+  const flowEdges = layoutEdges(edges);
   const { fitView } = useReactFlow();
 
+  // Fit view when nodes first appear
   useEffect(() => {
-    if (flowNodes.length > 0) {
-      // Small delay to let React Flow measure nodes before fitting
+    if (nodes.length > 0) {
       const timer = setTimeout(() => fitView({ padding: 0.3, duration: 200 }), 50);
       return () => clearTimeout(timer);
     }
-  }, [flowNodes.length, fitView]);
+  }, [nodes.length, fitView]);
 
   return (
     <ReactFlow
