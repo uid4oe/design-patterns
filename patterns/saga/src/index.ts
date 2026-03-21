@@ -79,8 +79,8 @@ export function createSimulator(): PatternSimulator {
       inventory.emitStart(emitter);
       shipping.emitStart(emitter);
 
-      collector.start();
-      const startTime = Date.now();
+      collector.start(clock.now());
+      const startTime = clock.now();
       const intervalMs = 1000 / scenario.requestsPerSecond;
 
       for (let i = 0; i < scenario.requestCount; i++) {
@@ -123,8 +123,8 @@ export function createSimulator(): PatternSimulator {
         });
       }
 
-      collector.stop();
-      const totalDurationMs = Date.now() - startTime;
+      collector.stop(clock.now());
+      const totalDurationMs = clock.now() - startTime;
       const metrics: AggregateMetrics = collector.getAggregateMetrics();
 
       // Emit saga-specific metrics

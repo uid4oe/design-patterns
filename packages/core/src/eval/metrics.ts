@@ -3,6 +3,9 @@ import type { AggregateMetrics } from "../stream/types.js";
 /**
  * Collects per-request metrics and computes aggregate statistics
  * including percentile latencies and throughput.
+ *
+ * Accepts optional time values for start/stop so simulators can
+ * pass virtual clock time instead of wall-clock time.
  */
 export class MetricCollector {
   private latencies: number[] = [];
@@ -12,14 +15,14 @@ export class MetricCollector {
   private startTimeMs = 0;
   private endTimeMs = 0;
 
-  /** Mark the start of the measurement period. */
-  start(): void {
-    this.startTimeMs = Date.now();
+  /** Mark the start of the measurement period. Pass clock.now() for virtual time. */
+  start(timeMs?: number): void {
+    this.startTimeMs = timeMs ?? Date.now();
   }
 
-  /** Mark the end of the measurement period. */
-  stop(): void {
-    this.endTimeMs = Date.now();
+  /** Mark the end of the measurement period. Pass clock.now() for virtual time. */
+  stop(timeMs?: number): void {
+    this.endTimeMs = timeMs ?? Date.now();
   }
 
   /** Record a request's latency in milliseconds. */

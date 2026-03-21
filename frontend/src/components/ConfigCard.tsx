@@ -1,16 +1,30 @@
 import { useState } from "react";
 import type { ScenarioConfig } from "../types.ts";
 
+/** Map pattern name to the primary node to inject failures into */
+const FAILURE_TARGET: Record<string, string> = {
+  "circuit-breaker": "backend",
+  saga: "inventory",
+  cqrs: "event-store",
+  "load-balancer": "backend",
+  "pub-sub": "broker",
+  bulkhead: "backend",
+  "rate-limiter": "backend",
+};
+
 interface ConfigCardProps {
   isRunning: boolean;
+  patternName: string | null;
   onRun: (config: ScenarioConfig) => void;
   onReset: () => void;
 }
 
-export function ConfigCard({ isRunning, onRun, onReset }: ConfigCardProps) {
+export function ConfigCard({ isRunning, patternName, onRun, onReset }: ConfigCardProps) {
   const [requestCount, setRequestCount] = useState(20);
   const [requestsPerSecond, setRequestsPerSecond] = useState(5);
   const [failureRate, setFailureRate] = useState(0);
+
+  const failureTarget = patternName ? (FAILURE_TARGET[patternName] ?? "backend") : "backend";
 
   return (
     <div className="animate-fade-in px-4 py-3">
@@ -66,7 +80,7 @@ export function ConfigCard({ isRunning, onRun, onReset }: ConfigCardProps) {
         </div>
         <div className="flex flex-col gap-1">
           <label className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)]">
-            Failure
+            {failureTarget}
           </label>
           <div className="flex items-center gap-1">
             <input
@@ -78,7 +92,7 @@ export function ConfigCard({ isRunning, onRun, onReset }: ConfigCardProps) {
               disabled={isRunning}
               className="w-16 bg-[var(--color-surface-tertiary)] text-[var(--color-text-primary)] px-2 py-1.5 rounded-lg text-[12px] font-mono border border-[var(--color-border-light)] outline-none focus:border-[var(--color-accent)] transition-colors disabled:opacity-40"
             />
-            <span className="text-[10px] text-[var(--color-text-tertiary)]">%</span>
+            <span className="text-[10px] text-[var(--color-text-tertiary)]">% fail</span>
           </div>
         </div>
 
@@ -89,7 +103,7 @@ export function ConfigCard({ isRunning, onRun, onReset }: ConfigCardProps) {
                 requestCount,
                 requestsPerSecond,
                 ...(failureRate > 0
-                  ? { failureInjection: { nodeFailures: { backend: failureRate / 100 } } }
+                  ? { failureInjection: { nodeFailures: { [failureTarget]: failureRate / 100 } } }
                   : {}),
               })
             }

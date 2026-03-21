@@ -108,6 +108,7 @@ export function App() {
           <div className="shrink-0 glass-strong rounded-2xl overflow-hidden">
             <ConfigCard
               isRunning={state.isRunning}
+              patternName={selectedPattern}
               onRun={handleRunCustom}
               onReset={reset}
             />

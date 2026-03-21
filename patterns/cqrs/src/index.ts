@@ -69,8 +69,8 @@ export function createSimulator(): PatternSimulator {
       readModel.emitStart(emitter);
       queryService.emitStart(emitter);
 
-      collector.start();
-      const startTime = Date.now();
+      collector.start(clock.now());
+      const startTime = clock.now();
       const intervalMs = 1000 / scenario.requestsPerSecond;
       let writeCount = 0;
       let readCount = 0;
@@ -164,8 +164,8 @@ export function createSimulator(): PatternSimulator {
         }
       }
 
-      collector.stop();
-      const totalDurationMs = Date.now() - startTime;
+      collector.stop(clock.now());
+      const totalDurationMs = clock.now() - startTime;
       const metrics: AggregateMetrics = collector.getAggregateMetrics();
 
       // Emit CQRS-specific metrics

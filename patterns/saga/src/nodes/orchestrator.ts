@@ -64,9 +64,9 @@ export class SagaOrchestrator extends BaseNode {
           node: this.name,
         });
 
-        const compensationStart = Date.now();
+        const compensationStart = this.clock.now();
         await this.compensate(completedSteps, request, emitter);
-        this.totalCompensationMs += Date.now() - compensationStart;
+        this.totalCompensationMs += this.clock.now() - compensationStart;
 
         this.setState("rolled-back", `compensated ${completedSteps.length} steps`, emitter);
 

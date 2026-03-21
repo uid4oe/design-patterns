@@ -116,6 +116,8 @@ export function reduceEvent(
     case "node_end":
       return {
         ...state,
+        activeEdgeKey: state.activeNodeId === event.node ? null : state.activeEdgeKey,
+        activeNodeId: state.activeNodeId === event.node ? null : state.activeNodeId,
         nodes: state.nodes.map((n) =>
           n.id === event.node
             ? {

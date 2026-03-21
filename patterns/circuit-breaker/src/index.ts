@@ -63,8 +63,8 @@ export function createSimulator(): PatternSimulator {
       breaker.emitStart(emitter);
       backend.emitStart(emitter);
 
-      collector.start();
-      const startTime = Date.now();
+      collector.start(clock.now());
+      const startTime = clock.now();
 
       // Run simulation
       const intervalMs = 1000 / scenario.requestsPerSecond;
@@ -112,8 +112,8 @@ export function createSimulator(): PatternSimulator {
         });
       }
 
-      collector.stop();
-      const totalDurationMs = Date.now() - startTime;
+      collector.stop(clock.now());
+      const totalDurationMs = clock.now() - startTime;
       const metrics: AggregateMetrics = collector.getAggregateMetrics();
 
       // Emit fast_fail_ratio metric
