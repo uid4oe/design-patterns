@@ -45,7 +45,7 @@ export function App() {
   );
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden p-4 lg:p-5 gap-2.5 lg:gap-3">
+    <div className="flex flex-col h-screen overflow-hidden p-2 lg:p-2.5 gap-2 lg:gap-2">
       {/* Header */}
       <header className="shrink-0 flex items-center justify-between px-4 py-1">
         <span className="text-base font-normal text-[var(--color-text-primary)] tracking-tight">
@@ -120,27 +120,39 @@ export function App() {
         </div>
       </main>
 
-      {/* Footer — matching reference input bar style */}
+      {/* Input bar — identical structure to reference */}
       <div className="shrink-0">
         <div className="max-w-2xl w-full mx-auto rounded-2xl glass-strong px-3 py-2 transition-shadow">
-          {/* Top row: status */}
-          <div className="flex items-center gap-2 px-1 py-1">
+          {/* Top row: status line (replaces textarea in reference) */}
+          <div className="flex items-center gap-2 px-1 py-1.5">
             {state.isRunning ? (
-              <span className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+              <span className="flex-1 flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
                 <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin-slow" />
                 Simulation running…
               </span>
             ) : state.metrics ? (
-              <span className="text-sm text-[var(--color-text-secondary)]">
+              <span className="flex-1 text-sm text-[var(--color-text-secondary)]">
                 {state.metrics.totalRequests} requests · {state.metrics.successCount} ok · {state.metrics.errorCount} errors · p99 {state.metrics.p99LatencyMs}ms
               </span>
             ) : (
-              <span className="text-sm text-[var(--color-text-tertiary)]">
+              <span className="flex-1 text-sm text-[var(--color-text-tertiary)]">
                 Select a pattern and run a scenario
               </span>
             )}
+            {state.isRunning && (
+              <button
+                type="button"
+                onClick={reset}
+                className="shrink-0 rounded-xl bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-1.5 text-sm font-medium text-white hover:brightness-110 focus:outline-none disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-sm shadow-blue-500/15"
+              >
+                <span className="flex items-center gap-1.5">
+                  <span className="h-3.5 w-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin-slow" />
+                  Running
+                </span>
+              </button>
+            )}
           </div>
-          {/* Bottom row: pattern tabs */}
+          {/* Bottom row: pattern tabs + hint */}
           <div className="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-[var(--color-border-light)]">
             <PatternSelector
               selected={selectedPattern}
@@ -148,9 +160,11 @@ export function App() {
               isStreaming={state.isRunning}
             />
             <div className="flex-1" />
-            <span className="text-[11px] text-[var(--color-text-tertiary)] pointer-events-none select-none shrink-0 hidden sm:flex items-center gap-1">
-              <span className="text-[10px]">System Design Patterns</span>
-            </span>
+            {!state.isRunning && (
+              <span className="text-[11px] text-[var(--color-text-tertiary)] pointer-events-none select-none shrink-0 hidden sm:flex items-center gap-1">
+                <span className="text-[10px]">System Design Patterns</span>
+              </span>
+            )}
           </div>
         </div>
       </div>
