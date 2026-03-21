@@ -120,15 +120,37 @@ export function App() {
         </div>
       </main>
 
-      {/* Footer — centered pattern bar */}
-      <div className="shrink-0 flex justify-center">
-        <div className="rounded-2xl glass-strong px-5 py-3">
-          <div className="flex items-center justify-center gap-3">
+      {/* Footer — matching reference input bar style */}
+      <div className="shrink-0">
+        <div className="max-w-2xl w-full mx-auto rounded-2xl glass-strong px-3 py-2 transition-shadow">
+          {/* Top row: status */}
+          <div className="flex items-center gap-2 px-1 py-1">
+            {state.isRunning ? (
+              <span className="flex items-center gap-2 text-sm text-[var(--color-text-secondary)]">
+                <span className="h-3.5 w-3.5 rounded-full border-2 border-[var(--color-border)] border-t-[var(--color-accent)] animate-spin-slow" />
+                Simulation running…
+              </span>
+            ) : state.metrics ? (
+              <span className="text-sm text-[var(--color-text-secondary)]">
+                {state.metrics.totalRequests} requests · {state.metrics.successCount} ok · {state.metrics.errorCount} errors · p99 {state.metrics.p99LatencyMs}ms
+              </span>
+            ) : (
+              <span className="text-sm text-[var(--color-text-tertiary)]">
+                Select a pattern and run a scenario
+              </span>
+            )}
+          </div>
+          {/* Bottom row: pattern tabs */}
+          <div className="flex items-center gap-2 mt-1.5 pt-1.5 border-t border-[var(--color-border-light)]">
             <PatternSelector
               selected={selectedPattern}
               onSelect={handlePatternSelect}
               isStreaming={state.isRunning}
             />
+            <div className="flex-1" />
+            <span className="text-[11px] text-[var(--color-text-tertiary)] pointer-events-none select-none shrink-0 hidden sm:flex items-center gap-1">
+              <span className="text-[10px]">System Design Patterns</span>
+            </span>
           </div>
         </div>
       </div>
