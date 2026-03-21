@@ -114,6 +114,101 @@ const circuitBreaker: PatternContent = {
   ],
 };
 
+const saga: PatternContent = {
+  name: "saga",
+  icon: "🔄",
+  tagline: "Distributed transactions with compensating rollbacks",
+  description:
+    "Manages multi-step distributed transactions without distributed locks. An orchestrator executes a sequence of local transactions across services. If any step fails, it runs compensating actions in reverse order to undo completed steps — ensuring eventual consistency without two-phase commit.",
+  whenToUse: [
+    "Multi-service order processing (order → payment → inventory → shipping)",
+    "Any workflow where partial completion must be rolled back on failure",
+    "Replacing two-phase commit in microservice architectures",
+    "Long-running business processes that span multiple bounded contexts",
+  ],
+  architectureMermaid: `graph LR
+    Client[Client] --> Orch[Orchestrator<br/>saga coordinator]
+    Orch -->|step 1| Order[Order Service]
+    Orch -->|step 2| Payment[Payment Service]
+    Orch -->|step 3| Inventory[Inventory Service]
+    Orch -->|step 4| Shipping[Shipping Service]
+    Inventory -.->|fail| Orch
+    Orch -.->|compensate| Payment
+    Orch -.->|compensate| Order`,
+  howItWorks: [
+    "The orchestrator receives a request and begins executing saga steps in sequence: Order → Payment → Inventory → Shipping",
+    "Each service performs its local transaction and reports success or failure back to the orchestrator",
+    "If all steps succeed, the saga completes and the orchestrator transitions to 'completed' state",
+    "If any step fails, the orchestrator enters 'compensating' mode and calls compensation on all previously completed steps in reverse order",
+    "Compensation undoes each step: refund payment, cancel order, release inventory — ensuring no partial state remains",
+  ],
+  nodes: [
+    {
+      name: "orchestrator",
+      role: "saga-orchestrator",
+      description:
+        "Coordinates the saga: executes steps in sequence, triggers reverse compensation on failure",
+    },
+    {
+      name: "order",
+      role: "service",
+      description: "Creates orders (forward) / cancels orders (compensate)",
+    },
+    {
+      name: "payment",
+      role: "service",
+      description: "Processes payments (forward) / issues refunds (compensate)",
+    },
+    {
+      name: "inventory",
+      role: "service",
+      description: "Reserves stock (forward) / releases stock (compensate)",
+    },
+    {
+      name: "shipping",
+      role: "service",
+      description: "Schedules shipment (forward) / cancels shipment (compensate)",
+    },
+  ],
+  tradeoffs: {
+    pros: [
+      "No distributed locks — each service manages its own local transaction",
+      "Eventual consistency without two-phase commit overhead",
+      "Clear compensation semantics make rollback predictable",
+      "Works well with event-driven architectures",
+    ],
+    cons: [
+      "Compensation logic must be written for every step (doubles implementation effort)",
+      "Intermediate states are visible to other transactions (no isolation)",
+      "Compensation can itself fail, requiring additional retry/dead-letter handling",
+      "Debugging multi-step failures across services is complex",
+    ],
+  },
+  suggestedScenarios: [
+    {
+      label: "Happy path",
+      description: "All 4 steps complete — order, payment, inventory, shipping succeed",
+      requestCount: 10,
+      requestsPerSecond: 5,
+    },
+    {
+      label: "Inventory failure",
+      description: "Inventory fails 50% — watch compensation roll back payment and order",
+      requestCount: 10,
+      requestsPerSecond: 3,
+      failureInjection: { nodeFailures: { inventory: 0.5 } },
+    },
+    {
+      label: "Payment always fails",
+      description: "Payment 100% failure — only order gets compensated each time",
+      requestCount: 8,
+      requestsPerSecond: 3,
+      failureInjection: { nodeFailures: { payment: 1.0 } },
+    },
+  ],
+};
+
 export const PATTERN_CONTENT: Record<string, PatternContent> = {
   "circuit-breaker": circuitBreaker,
+  saga,
 };

@@ -4,6 +4,7 @@
     { "path": "packages/core" },
     { "path": "server" },
     { "path": "frontend" },
-    { "path": "patterns/circuit-breaker" }
+    { "path": "patterns/circuit-breaker" },
+    { "path": "patterns/saga" }
   ]
 }

@@ -1,0 +1,32 @@
+{
+  "name": "saga-eval",
+  "scenarios": [
+    {
+      "name": "happy_path",
+      "config": { "requestCount": 20, "requestsPerSecond": 5, "seed": 1 },
+      "criteria": [
+        { "name": "error_rate", "threshold": 0.01, "comparator": "lt", "weight": 1 }
+      ]
+    },
+    {
+      "name": "inventory_failure_50pct",
+      "config": {
+        "requestCount": 30, "requestsPerSecond": 10, "seed": 2,
+        "failureInjection": { "nodeFailures": { "inventory": 0.5 } }
+      },
+      "criteria": [
+        { "name": "rollback_rate", "threshold": 0.1, "comparator": "gt", "weight": 1 }
+      ]
+    },
+    {
+      "name": "payment_failure_100pct",
+      "config": {
+        "requestCount": 10, "requestsPerSecond": 5, "seed": 3,
+        "failureInjection": { "nodeFailures": { "payment": 1.0 } }
+      },
+      "criteria": [
+        { "name": "error_rate", "threshold": 0.9, "comparator": "gt", "weight": 1 }
+      ]
+    }
+  ]
+}
