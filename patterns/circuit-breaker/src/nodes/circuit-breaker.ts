@@ -9,6 +9,12 @@ import { BackendNode } from "./backend.js";
 
 type BreakerState = "closed" | "open" | "half-open";
 
+const VALID_BREAKER_STATES = new Set<string>(["closed", "open", "half-open"]);
+
+function isBreakerState(s: string): s is BreakerState {
+  return VALID_BREAKER_STATES.has(s);
+}
+
 interface CircuitBreakerConfig {
   name: string;
   failureThreshold: number;
@@ -40,16 +46,23 @@ export class CircuitBreakerNode extends BaseNode {
     this.backend = config.backend;
   }
 
-  private get breakerState(): BreakerState {
-    return this.state as BreakerState;
+  private getBreakerState(): BreakerState {
+    if (!isBreakerState(this.state)) {
+      throw new Error(
+        `Invalid breaker state: "${this.state}". Expected one of: closed, open, half-open`,
+      );
+    }
+    return this.state;
   }
 
   protected async process(
     request: SimulationRequest,
     emitter: SimulationEmitter,
   ): Promise<NodeResult> {
+    const currentState = this.getBreakerState();
+
     // Check if open circuit should transition to half-open
-    if (this.breakerState === "open") {
+    if (currentState === "open") {
       const elapsed = this.clock.now() - this.openedAtMs;
       if (elapsed >= this.cooldownMs) {
         this.halfOpenProbes = 0;
@@ -57,7 +70,8 @@ export class CircuitBreakerNode extends BaseNode {
       }
     }
 
-    switch (this.breakerState) {
+    const resolvedState = this.getBreakerState();
+    switch (resolvedState) {
       case "closed":
         return this.handleClosed(request, emitter);
       case "open":

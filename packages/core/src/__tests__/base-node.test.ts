@@ -60,7 +60,7 @@ describe("BaseNode", () => {
     });
   });
 
-  it("tracks metrics across multiple requests", async () => {
+  it("tracks metrics across multiple requests with correct averages", async () => {
     const node = new TestNode({ name: "test", role: "tester", latencyMs: 0 });
     const { emitter } = createEmitter();
 
@@ -71,6 +71,20 @@ describe("BaseNode", () => {
     const metrics = node.getMetrics();
     expect(metrics.requestsHandled).toBe(3);
     expect(metrics.errorsCount).toBe(0);
+    // avgLatencyMs should be defined and non-negative
+    expect(metrics.avgLatencyMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it("tracks errors separately from successes", async () => {
+    const node = new ThrowingNode({ name: "err", role: "tester", latencyMs: 0 });
+    const { emitter } = createEmitter();
+
+    await node.run(createRequest("r1"), emitter);
+    await node.run(createRequest("r2"), emitter);
+
+    const metrics = node.getMetrics();
+    expect(metrics.requestsHandled).toBe(2);
+    expect(metrics.errorsCount).toBe(2);
   });
 
   it("rejects requests when capacity is exceeded", async () => {

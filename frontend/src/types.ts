@@ -11,6 +11,7 @@ export interface TopologyNode {
   role: string;
   state: "idle" | "active" | "healthy" | "degraded" | "failed";
   metrics?: { requests: number; avgLatencyMs: number; errors: number };
+  [key: string]: unknown;
 }
 
 export interface TopologyEdge {

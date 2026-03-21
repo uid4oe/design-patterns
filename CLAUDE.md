@@ -168,11 +168,11 @@ docker compose up                        # server + frontend
 
 ## Status
 
-- [ ] Scaffold (root config, dirs, package.json files)
-- [ ] Step 1: Core Library
-- [ ] Step 2: Server
-- [ ] Step 3: Frontend Shell
-- [ ] Step 4a: Circuit Breaker Pattern
+- [x] Scaffold (root config, dirs, package.json files)
+- [x] Step 1: Core Library (42 tests — SeededRandom, SimulationClock, BaseNode, SimpleNode, MetricCollector, eval runner)
+- [x] Step 2: Server (11 tests — SSE streaming, pattern routes, rate limiter)
+- [x] Step 3: Frontend Shell (11 tests — SSE parsing, event reduction, React Flow topology)
+- [x] Step 4a: Circuit Breaker Pattern (15 tests — state machine path verification, fast-fail, probe mechanics)
 - [ ] Step 4b: Saga Pattern
 - [ ] Step 4c: CQRS Pattern
 - [ ] Step 4d: Load Balancer Pattern
