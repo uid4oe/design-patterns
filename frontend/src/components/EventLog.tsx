@@ -60,23 +60,18 @@ function formatEvent(event: SimulationEvent): string {
 }
 
 export function EventLog({ events }: EventLogProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [events.length]);
 
   if (events.length === 0) return null;
 
-  const visibleEvents = events.slice(-80);
+  const visibleEvents = events.slice(-60);
 
   return (
-    <div
-      ref={scrollRef}
-      className="p-3 animate-fade-in"
-    >
+    <div className="p-3">
       <div className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-text-tertiary)] mb-1.5 flex items-center gap-1.5">
         <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
@@ -85,7 +80,7 @@ export function EventLog({ events }: EventLogProps) {
       </div>
       {visibleEvents.map((event, i) => (
         <div
-          key={i}
+          key={events.length - visibleEvents.length + i}
           className={`animate-message-in font-mono text-[11px] leading-relaxed flex items-start gap-1.5 ${eventColor(event.type)}`}
         >
           <span className="shrink-0 w-3 text-center opacity-50">
@@ -94,6 +89,7 @@ export function EventLog({ events }: EventLogProps) {
           <span>{formatEvent(event)}</span>
         </div>
       ))}
+      <div ref={bottomRef} />
     </div>
   );
 }

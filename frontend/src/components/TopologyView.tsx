@@ -1,12 +1,14 @@
 import {
   ReactFlow,
   Background,
+  useReactFlow,
+  ReactFlowProvider,
   type Node,
   type Edge,
   Position,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import type { TopologyNode, TopologyEdge } from "../types.ts";
 
 interface TopologyViewProps {
@@ -83,14 +85,14 @@ const nodeTypes = { simulation: SimulationNode };
 
 function layoutNodes(topologyNodes: TopologyNode[]): Node[] {
   const spacing = 200;
-  const startX = 60;
-  const y = 80;
+  const totalWidth = (topologyNodes.length - 1) * spacing;
+  const startX = -totalWidth / 2;
 
   return topologyNodes.map((tn, i) => ({
     id: tn.id,
     type: "simulation",
     data: tn,
-    position: { x: startX + i * spacing, y },
+    position: { x: startX + i * spacing, y: 0 },
     sourcePosition: Position.Right,
     targetPosition: Position.Left,
   }));
@@ -114,38 +116,48 @@ function layoutEdges(topologyEdges: TopologyEdge[]): Edge[] {
   }));
 }
 
-export function TopologyView({ nodes, edges }: TopologyViewProps) {
+/** Inner component that has access to useReactFlow for fitView on node changes */
+function TopologyInner({ nodes, edges }: TopologyViewProps) {
   const flowNodes = useMemo(() => layoutNodes(nodes), [nodes]);
   const flowEdges = useMemo(() => layoutEdges(edges), [edges]);
+  const { fitView } = useReactFlow();
 
+  useEffect(() => {
+    if (flowNodes.length > 0) {
+      // Small delay to let React Flow measure nodes before fitting
+      const timer = setTimeout(() => fitView({ padding: 0.3, duration: 200 }), 50);
+      return () => clearTimeout(timer);
+    }
+  }, [flowNodes.length, fitView]);
+
+  return (
+    <ReactFlow
+      nodes={flowNodes}
+      edges={flowEdges}
+      nodeTypes={nodeTypes}
+      fitView
+      fitViewOptions={{ padding: 0.3 }}
+      panOnDrag
+      zoomOnScroll={false}
+      preventScrolling={false}
+      proOptions={{ hideAttribution: true }}
+      style={{ background: "transparent" }}
+    >
+      <Background color="rgba(148, 163, 184, 0.08)" gap={24} />
+    </ReactFlow>
+  );
+}
+
+export function TopologyView({ nodes, edges }: TopologyViewProps) {
   if (nodes.length === 0) {
-    return (
-      <div className="flex-1 flex items-center justify-center text-[var(--color-text-tertiary)]">
-        <div className="text-center animate-fade-in">
-          <div className="text-3xl mb-2">🔧</div>
-          <div className="text-[13px] font-medium">Select a pattern and run a simulation</div>
-          <div className="text-[11px] mt-1 text-[var(--color-text-tertiary)]">
-            Watch system design patterns in action
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="flex-1 animate-fade-in" style={{ minHeight: 280 }}>
-      <ReactFlow
-        nodes={flowNodes}
-        edges={flowEdges}
-        nodeTypes={nodeTypes}
-        fitView
-        panOnDrag
-        zoomOnScroll
-        proOptions={{ hideAttribution: true }}
-        style={{ background: "transparent" }}
-      >
-        <Background color="rgba(148, 163, 184, 0.08)" gap={24} />
-      </ReactFlow>
+    <div className="flex-1 animate-fade-in" style={{ minHeight: 220 }}>
+      <ReactFlowProvider>
+        <TopologyInner nodes={nodes} edges={edges} />
+      </ReactFlowProvider>
     </div>
   );
 }
