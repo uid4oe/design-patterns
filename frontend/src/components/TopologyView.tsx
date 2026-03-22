@@ -260,7 +260,7 @@ function layoutThreeColumn(
   );
 
   const result: Node[] = [];
-  const spacing = 100;
+  const spacing = 65;
 
   // Left node (gateway)
   if (leftNode) {
@@ -316,7 +316,7 @@ function layoutPubSub(
   );
 
   const result: Node[] = [];
-  const subSpacing = 100;
+  const subSpacing = 65;
 
   // Publishers on the left
   const pubHeight = (publishers.length - 1) * subSpacing;
@@ -428,7 +428,7 @@ export function TopologyView({ nodes, edges, activeEdgeKey, activeNodeId }: Topo
   }
 
   return (
-    <div className="flex-1 animate-fade-in" style={{ minHeight: 220 }}>
+    <div className="flex-1 animate-fade-in" style={{ width: "100%", height: "100%", minHeight: 220 }}>
       <ReactFlowProvider>
         <TopologyInner nodes={nodes} edges={edges} activeEdgeKey={activeEdgeKey} activeNodeId={activeNodeId} />
       </ReactFlowProvider>

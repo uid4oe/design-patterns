@@ -66,8 +66,13 @@ export function reduceEvent(
         totalRequests: 0, successCount: 0, errorCount: 0,
         p50LatencyMs: 0, p99LatencyMs: 0, throughputRps: 0,
       };
+      const newTotal = prevMetrics.totalRequests + 1;
       const updatedMetrics = isNewRequest
-        ? { ...prevMetrics, totalRequests: prevMetrics.totalRequests + 1 }
+        ? {
+            ...prevMetrics,
+            totalRequests: newTotal,
+            successCount: newTotal - prevMetrics.errorCount,
+          }
         : prevMetrics;
 
       const existingEdge = state.edges.find(
@@ -165,6 +170,12 @@ export function reduceEvent(
         updated = { ...prev, errorCount: event.value, totalRequests: prev.successCount + event.value };
       } else if (event.name === "event_store_size" || event.name === "total_deliveries") {
         updated = { ...prev, totalRequests: Math.max(prev.totalRequests, event.value) };
+      } else if (event.name === "p50_latency_ms") {
+        updated = { ...prev, p50LatencyMs: event.value };
+      } else if (event.name === "p99_latency_ms") {
+        updated = { ...prev, p99LatencyMs: event.value };
+      } else if (event.name === "throughput_rps") {
+        updated = { ...prev, throughputRps: event.value };
       }
       return {
         ...state,
@@ -181,7 +192,11 @@ export function reduceEvent(
       return {
         ...state,
         error: event.message,
-        metrics: { ...errMetrics, errorCount: errMetrics.errorCount + 1 },
+        metrics: {
+          ...errMetrics,
+          errorCount: errMetrics.errorCount + 1,
+          successCount: Math.max(0, errMetrics.totalRequests - errMetrics.errorCount - 1),
+        },
         nodes: state.nodes.map((n) =>
           n.id === event.node ? { ...n, state: "failed" as const } : n,
         ),
