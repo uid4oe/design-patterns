@@ -29,7 +29,9 @@ export class GatewayNode extends BaseNode {
     );
     this.pools = config.pools;
     const first = config.pools.values().next();
-    if (first.done) throw new Error("Gateway requires at least one pool");
+    if (first.done || !first.value) {
+      throw new Error("Gateway requires at least one pool");
+    }
     this.defaultPool = first.value;
   }
 

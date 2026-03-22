@@ -24,6 +24,7 @@ export class PoolNode extends BaseNode {
   private readonly service: ServiceNode;
   private totalAccepted = 0;
   private totalRejected = 0;
+  private isDegraded = false;
 
   constructor(config: PoolConfig, seed = 0, clock?: SimulationClock, realTime = false) {
     super(
@@ -48,13 +49,16 @@ export class PoolNode extends BaseNode {
         message: `pool exhausted (${this.activeCount}/${this.maxConcurrency})`,
         recoverable: true,
       });
-      emitter.emit({
-        type: "node_state_change",
-        node: this.name,
-        from: "active",
-        to: "degraded",
-        reason: `capacity full — rejecting requests`,
-      });
+      if (!this.isDegraded) {
+        this.isDegraded = true;
+        emitter.emit({
+          type: "node_state_change",
+          node: this.name,
+          from: "active",
+          to: "degraded",
+          reason: `capacity full — rejecting requests`,
+        });
+      }
       emitter.emit({
         type: "metric",
         name: `${this.name}_rejections`,
@@ -97,6 +101,9 @@ export class PoolNode extends BaseNode {
       return await this.service.run(request, emitter);
     } finally {
       this.activeCount--;
+      if (this.isDegraded && this.activeCount < this.maxConcurrency) {
+        this.isDegraded = false;
+      }
     }
   }
 
