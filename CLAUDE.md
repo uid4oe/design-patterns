@@ -175,8 +175,8 @@ docker compose up                        # server + frontend
 - [x] Step 4a: Circuit Breaker Pattern (15 tests — state machine path verification, fast-fail, probe mechanics)
 - [x] Step 4b: Saga Pattern (12 tests — orchestrated compensation, reverse ordering, rollback metrics)
 - [x] Step 4c: CQRS Pattern (11 tests — dual read/write paths, event store, projection lag, failure propagation)
-- [x] Step 4d: Load Balancer Pattern (9 tests — round-robin distribution, failure handling, consistent hash, spread metrics)
-- [ ] Step 4e: Pub/Sub Pattern
+- [x] Step 4d: Load Balancer Pattern (11 tests — round-robin distribution, failure detection, consistent hash, spread metrics)
+- [x] Step 4e: Pub/Sub Pattern (8 tests — fan-out delivery, topic filtering, consumer group round-robin, failure handling)
 - [ ] Step 4f: Bulkhead Pattern
 - [ ] Step 4g: Rate Limiter Pattern
 - [ ] Step 5: Eval System
