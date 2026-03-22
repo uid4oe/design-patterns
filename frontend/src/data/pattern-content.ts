@@ -464,6 +464,69 @@ const bulkhead: PatternContent = {
   ],
 };
 
+const rateLimiter: PatternContent = {
+  name: "rate-limiter",
+  icon: "🚦",
+  tagline: "Token bucket rate limiting with burst handling",
+  description:
+    "Controls request throughput using a token bucket algorithm. Tokens refill at a steady rate, each request consumes one token, and requests without tokens are rejected. Allows bursts up to the bucket capacity, then enforces a steady-state rate — protecting backend services from overload.",
+  whenToUse: [
+    "API rate limiting — enforce per-client or per-endpoint request quotas",
+    "Protecting backend services from traffic spikes and DDoS",
+    "Fair resource allocation across multiple consumers",
+    "Smoothing bursty traffic into steady-state throughput",
+  ],
+  architectureMermaid: `graph LR
+    Client[Client] --> RL[Rate Limiter<br/>token bucket]
+    RL -->|token available| Backend[Backend Service]
+    RL -.->|bucket empty| Reject[Reject 429]`,
+  howItWorks: [
+    "The token bucket starts full (e.g., 20 tokens). Tokens refill at a fixed rate (e.g., 10/sec)",
+    "Each incoming request checks the bucket: if tokens ≥ 1, consume a token and forward to backend",
+    "If the bucket is empty, the request is immediately rejected (HTTP 429 Too Many Requests)",
+    "Bursts are handled naturally: a full bucket absorbs up to 20 rapid requests, then rejections begin",
+    "After a burst, the bucket gradually refills — requests start being accepted again as tokens appear",
+  ],
+  nodes: [
+    { name: "limiter", role: "rate-limiter", description: "Token bucket (20 max, 10/sec refill) that gates requests" },
+    { name: "backend", role: "service", description: "Backend service protected by the rate limiter" },
+  ],
+  tradeoffs: {
+    pros: [
+      "Allows controlled bursts (unlike fixed window which resets abruptly)",
+      "Simple to implement and reason about",
+      "Steady-state rate is predictable and configurable",
+      "Protects backend from overload while maximizing throughput",
+    ],
+    cons: [
+      "Rejected requests are lost (no queuing or retry built in)",
+      "Single token bucket doesn't differentiate request priority",
+      "Bucket size tuning is tricky — too small limits bursts, too large allows overload",
+      "Doesn't handle distributed rate limiting across multiple instances",
+    ],
+  },
+  suggestedScenarios: [
+    {
+      label: "Under limit",
+      description: "5 rps against 10/sec refill — all accepted, bucket stays full",
+      requestCount: 20,
+      requestsPerSecond: 5,
+    },
+    {
+      label: "Burst overload",
+      description: "50 rps burst — first ~20 accepted (bucket), then rejections until refill",
+      requestCount: 40,
+      requestsPerSecond: 50,
+    },
+    {
+      label: "Sustained overload",
+      description: "30 rps against 10/sec limit — observe accept ratio stabilize at ~33%",
+      requestCount: 30,
+      requestsPerSecond: 30,
+    },
+  ],
+};
+
 export const PATTERN_CONTENT: Record<string, PatternContent> = {
   saga,
   cqrs,
@@ -471,4 +534,5 @@ export const PATTERN_CONTENT: Record<string, PatternContent> = {
   "pub-sub": pubSub,
   "circuit-breaker": circuitBreaker,
   bulkhead,
+  "rate-limiter": rateLimiter,
 };

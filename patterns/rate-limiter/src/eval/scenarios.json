@@ -1,0 +1,19 @@
+{
+  "name": "rate-limiter-eval",
+  "scenarios": [
+    {
+      "name": "under_limit",
+      "config": { "requestCount": 20, "requestsPerSecond": 5, "seed": 1 },
+      "criteria": [
+        { "name": "error_rate", "threshold": 0.05, "comparator": "lt", "weight": 1 }
+      ]
+    },
+    {
+      "name": "burst_overload",
+      "config": { "requestCount": 40, "requestsPerSecond": 50, "seed": 2 },
+      "criteria": [
+        { "name": "error_rate", "threshold": 0.2, "comparator": "gt", "weight": 1 }
+      ]
+    }
+  ]
+}

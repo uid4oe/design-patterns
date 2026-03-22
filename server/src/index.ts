@@ -14,7 +14,7 @@ const PATTERN_PACKAGES: string[] = [
   "@design-patterns/pub-sub",
   "@design-patterns/circuit-breaker",
   "@design-patterns/bulkhead",
-  // "@design-patterns/rate-limiter",
+  "@design-patterns/rate-limiter",
 ];
 
 async function loadPatterns(): Promise<Map<string, LoadedPattern>> {

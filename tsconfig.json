@@ -9,6 +9,7 @@
     { "path": "patterns/cqrs" },
     { "path": "patterns/load-balancer" },
     { "path": "patterns/pub-sub" },
-    { "path": "patterns/bulkhead" }
+    { "path": "patterns/bulkhead" },
+    { "path": "patterns/rate-limiter" }
   ]
 }
