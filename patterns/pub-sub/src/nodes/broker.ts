@@ -55,8 +55,9 @@ export class BrokerNode extends BaseNode {
       detail: `routing to ${targets.length} subscriber(s) on topic: ${topic}`,
     });
 
-    // Fan-out to all resolved targets
-    let deliveries = 0;
+    // Fan-out to all resolved targets, continue on individual failures
+    let delivered = 0;
+    let failed = 0;
     for (const target of targets) {
       emitter.emit({
         type: "request_flow",
@@ -65,23 +66,28 @@ export class BrokerNode extends BaseNode {
         requestId: request.id,
         label: topic,
       });
-      await target.run(request, emitter);
-      deliveries++;
+      const result = await target.run(request, emitter);
       this.totalDeliveries++;
+      if (result.success) {
+        delivered++;
+      } else {
+        failed++;
+      }
     }
 
     emitter.emit({
       type: "metric",
       name: "fan_out_count",
-      value: deliveries,
+      value: delivered,
       unit: "deliveries",
       node: this.name,
     });
 
+    const allFailed = targets.length > 0 && delivered === 0;
     return {
-      output: `delivered-to-${deliveries}`,
+      output: `delivered-${delivered}-failed-${failed}`,
       durationMs: 0,
-      success: true,
+      success: !allFailed,
       metrics: this.getMetrics(),
     };
   }

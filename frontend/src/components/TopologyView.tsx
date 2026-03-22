@@ -105,8 +105,14 @@ const nodeTypes = { simulation: SimulationNodeComponent };
 function layoutNodes(topologyNodes: TopologyNode[], activeNodeId: string | null): Node[] {
   // For patterns with an orchestrator/coordinator, use hub layout
   // Otherwise use horizontal layout
+  // Pub-sub: publisher(s) left, broker center, subscribers right
+  const brokerIdx = topologyNodes.findIndex((n) => n.role === "message-broker");
+  if (brokerIdx >= 0 && topologyNodes.length > 3) {
+    return layoutPubSub(topologyNodes, brokerIdx, activeNodeId);
+  }
+
   const orchestratorIdx = topologyNodes.findIndex(
-    (n) => n.role === "saga-orchestrator" || n.role === "circuit-breaker" || n.role === "coordinator" || n.role === "load-balancer" || n.role === "message-broker",
+    (n) => n.role === "saga-orchestrator" || n.role === "circuit-breaker" || n.role === "coordinator" || n.role === "load-balancer",
   );
 
   if (orchestratorIdx >= 0 && topologyNodes.length > 3) {
@@ -188,6 +194,62 @@ function layoutHubSpoke(
       type: "simulation",
       data: { ...tn, isActiveTarget: tn.id === activeNodeId },
       position: { x: 160, y: -totalSpokeHeight / 2 + i * spokeSpacing },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+    });
+  });
+
+  return result;
+}
+
+/** 3-column layout: publishers left, broker center, subscribers right */
+function layoutPubSub(
+  topologyNodes: TopologyNode[],
+  brokerIdx: number,
+  activeNodeId: string | null,
+): Node[] {
+  const broker = topologyNodes[brokerIdx];
+  const publishers = topologyNodes.filter((n) => n.role === "publisher");
+  const subscribers = topologyNodes.filter(
+    (n, i) => i !== brokerIdx && n.role !== "publisher",
+  );
+
+  const result: Node[] = [];
+  const subSpacing = 100;
+
+  // Publishers on the left
+  const pubHeight = (publishers.length - 1) * subSpacing;
+  publishers.forEach((tn, i) => {
+    result.push({
+      id: tn.id,
+      type: "simulation",
+      data: { ...tn, isActiveTarget: tn.id === activeNodeId },
+      position: { x: -280, y: -pubHeight / 2 + i * subSpacing },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+    });
+  });
+
+  // Broker in the center
+  if (broker) {
+    result.push({
+      id: broker.id,
+      type: "simulation",
+      data: { ...broker, isActiveTarget: broker.id === activeNodeId },
+      position: { x: 0, y: 0 },
+      sourcePosition: Position.Right,
+      targetPosition: Position.Left,
+    });
+  }
+
+  // Subscribers on the right
+  const subHeight = (subscribers.length - 1) * subSpacing;
+  subscribers.forEach((tn, i) => {
+    result.push({
+      id: tn.id,
+      type: "simulation",
+      data: { ...tn, isActiveTarget: tn.id === activeNodeId },
+      position: { x: 280, y: -subHeight / 2 + i * subSpacing },
       sourcePosition: Position.Right,
       targetPosition: Position.Left,
     });

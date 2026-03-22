@@ -105,7 +105,7 @@ describe("BrokerNode", () => {
     const result = await broker.run(makeRequest("r1", "unknown"), emitter);
 
     expect(result.success).toBe(true);
-    expect(result.output).toBe("delivered-to-0");
+    expect(result.output).toBe("delivered-0-failed-0");
   });
 });
 
@@ -142,7 +142,7 @@ describe("Pub/Sub Simulator", () => {
     expect(last?.type).toBe("done");
   });
 
-  it("handles subscriber failure gracefully", async () => {
+  it("handles subscriber failure — other subscribers still receive", async () => {
     const emitter = new CollectingEmitter();
     const simulator = createSimulator();
 
@@ -156,8 +156,15 @@ describe("Pub/Sub Simulator", () => {
       emitter,
     );
 
-    // sub-2 fails but sub-1 and sub-3 still receive
+    // sub-1 and sub-3 still receive all messages despite sub-2 failing
     expect(emitter.getMetricValue("sub-1_messages")).toBe(5);
     expect(emitter.getMetricValue("sub-3_messages")).toBe(5);
+
+    // sub-2 should have received 0 successful messages (all failed)
+    // Verify error events were emitted for sub-2
+    const sub2Errors = emitter.events.filter(
+      (e) => e.type === "error" && e.node === "sub-2",
+    );
+    expect(sub2Errors.length).toBeGreaterThan(0);
   });
 });
