@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { SimulationRunner } from "../simulation/runner.js";
 import { SimpleNode, SimulationClock, CollectingEmitter } from "../index.js";
-import type { NodeResult, SimulationRequest, SimulationEvent } from "../index.js";
+import type { NodeResult, SimulationRequest, SimulationEvent, SimulationContext } from "../index.js";
 
 /** Minimal node that tracks call order for concurrency testing. */
 class TrackingNode extends SimpleNode {
@@ -391,7 +391,7 @@ describe("SimulationRunner — parallel (concurrency > 1)", () => {
     const emitter2 = new CollectingEmitter();
     const node2 = new TrackingNode({ name: "svc", role: "service", latencyMs: 0 }, 1, clock2);
 
-    const makeProcessor = (node: TrackingNode) => async (request: SimulationRequest, ctx: { emitter: CollectingEmitter }) => {
+    const makeProcessor = (node: TrackingNode) => async (request: SimulationRequest, ctx: SimulationContext) => {
       const r = await node.run(request, ctx.emitter);
       return { result: r, path: ["svc"] };
     };
@@ -401,7 +401,7 @@ describe("SimulationRunner — parallel (concurrency > 1)", () => {
       emitter: emitter1,
       clock: clock1,
       nodes: [node1],
-      processRequest: makeProcessor(node1) as Parameters<typeof SimulationRunner.run>[0]["processRequest"],
+      processRequest: makeProcessor(node1),
     });
 
     const r2 = await SimulationRunner.run({
@@ -410,7 +410,7 @@ describe("SimulationRunner — parallel (concurrency > 1)", () => {
       clock: clock2,
       concurrency: 1,
       nodes: [node2],
-      processRequest: makeProcessor(node2) as Parameters<typeof SimulationRunner.run>[0]["processRequest"],
+      processRequest: makeProcessor(node2),
     });
 
     expect(r1.metrics.totalRequests).toBe(r2.metrics.totalRequests);
